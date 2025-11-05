@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Use webpack for build (explicitly set)
   webpack: (config, { isServer, webpack }) => {
     if (!isServer) {
       // Exclude server-only Node.js modules from client bundle
@@ -54,6 +55,8 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  // Empty turbopack config to silence the warning
+  turbopack: {},
 };
 
 export default nextConfig;
