@@ -21,7 +21,7 @@ const allowedChains = [
   defineChain(84532), // Base Sepolia
 ];
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
 interface EndpointOption {
   id: string;
