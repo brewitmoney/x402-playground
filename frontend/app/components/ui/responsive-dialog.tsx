@@ -17,6 +17,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer"
+import { cn } from "@/lib/utils"
 
 interface ResponsiveDialogProps {
   open: boolean
@@ -40,7 +41,7 @@ export function ResponsiveDialog({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={contentClassName}>
+        <DialogContent className={cn("border border-zinc-700", contentClassName)}>
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
             {description && <DialogDescription>{description}</DialogDescription>}

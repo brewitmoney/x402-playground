@@ -16,10 +16,6 @@ const client = createThirdwebClient({
   clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
 });
 
-// Define allowed chains - only Base Sepolia for this app
-const allowedChains = [
-  defineChain(84532), // Base Sepolia
-];
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
@@ -168,12 +164,12 @@ export default function TryYourselfPage() {
           <ConnectButton />
         </div>
       </div>
-      <Link
+      {/* <Link
         href="/"
         className="text-zinc-400 hover:text-foreground transition-colors"
       >
         ← Back
-      </Link>
+      </Link> */}
       <div className="flex flex-col items-center justify-center gap-6 text-center max-w-lg w-full mx-auto h-full">
         <h1 className="text-5xl font-semibold tracking-tight text-foreground">
           Try Yourself

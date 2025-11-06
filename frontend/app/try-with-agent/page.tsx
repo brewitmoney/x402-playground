@@ -187,7 +187,7 @@ export default function TryWithAgentPage() {
   };
 
   return (
-    <main className="flex w-full flex-col h-full gap-4">
+    <main className="flex w-full flex-col h-full gap-6">
       <div className="flex items-center gap-4 w-full">
         <Image
           src="/assets/x402-Playground-White.svg"
@@ -222,12 +222,12 @@ export default function TryWithAgentPage() {
         </div>
       </div>
 
-      <Link
+      {/* <Link
         href="/"
         className="text-zinc-400 hover:text-foreground transition-colors"
       >
         ← Back
-      </Link>
+      </Link> */}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-900 rounded-lg border border-zinc-700">
