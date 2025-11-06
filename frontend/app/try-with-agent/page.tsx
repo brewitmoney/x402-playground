@@ -5,7 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useUSDCBalance } from "../hooks/useUSDCBalance";
 import CopyButton from "../components/CopyButton";
-import { Send, SendHorizonal } from "lucide-react";
+import { Send } from "lucide-react";
+import { formatUnits } from "viem";
 
 interface PaymentRequired {
   network: string;
@@ -129,11 +130,11 @@ export default function TryWithAgentPage() {
           setPendingPayment(data.paymentRequired);
           setPendingMessages([...currentMessages, userMessage]);
           const paymentReq = data.paymentRequired[0];
-          const amountUSD = Number(paymentReq.maxAmountRequired) / 1e6;
+          const amountUSD = formatUnits(BigInt(paymentReq.maxAmountRequired), 6);
           const assistantMessage: Message = {
             id: Date.now().toString(),
             role: "assistant",
-            content: `Payment required: ${amountUSD.toFixed(6)} ${
+            content: `Payment required: ${amountUSD} ${
               paymentReq.extra?.name || "tokens"
             }\n\n${
               paymentReq.description || "Please confirm payment to proceed."
@@ -184,6 +185,91 @@ export default function TryWithAgentPage() {
   const formatAddress = (address: string) => {
     if (address.length <= 12) return address;
     return `${address.slice(0, 6)}...${address.slice(-6)}`;
+  };
+
+  // Function to render text with clickable URLs
+  const renderTextWithLinks = (text: string): React.ReactNode[] => {
+    // First, handle markdown-style links [text](url)
+    const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = markdownLinkRegex.exec(text)) !== null) {
+      // Add text before the link
+      if (match.index > lastIndex) {
+        const beforeText = text.slice(lastIndex, match.index);
+        parts.push(...renderPlainUrls(beforeText));
+      }
+      // Add the link
+      parts.push(
+        <a
+          key={match.index}
+          href={match[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300 underline break-all"
+        >
+          {match[1]}
+        </a>
+      );
+      lastIndex = markdownLinkRegex.lastIndex;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      const remainingText = text.slice(lastIndex);
+      parts.push(...renderPlainUrls(remainingText));
+    }
+
+    // If no markdown links were found, just render plain URLs
+    if (parts.length === 0) {
+      return renderPlainUrls(text);
+    }
+
+    return parts;
+  };
+
+  // Function to render plain URLs in text
+  const renderPlainUrls = (text: string): React.ReactNode[] => {
+    // URL regex pattern
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+    let key = 0;
+
+    while ((match = urlRegex.exec(text)) !== null) {
+      // Add text before the URL
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      // Add the URL as a link
+      parts.push(
+        <a
+          key={key++}
+          href={match[1]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300 underline break-all"
+        >
+          {match[1]}
+        </a>
+      );
+      lastIndex = urlRegex.lastIndex;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    // If no URLs found, return the text as-is
+    if (parts.length === 0) {
+      return [text];
+    }
+
+    return parts;
   };
 
   return (
@@ -245,7 +331,9 @@ export default function TryWithAgentPage() {
                   : "bg-zinc-900 text-foreground border border-zinc-700"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+              <div className="text-sm whitespace-pre-wrap">
+                {renderTextWithLinks(message.content)}
+              </div>
               {message.toolCalls && message.toolCalls.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-700 space-y-2">
                   <p className="text-xs font-semibold text-zinc-400 mb-2">
@@ -279,32 +367,41 @@ export default function TryWithAgentPage() {
                           </div>
                         )}
                       {toolCall.paymentRequired && (
-                        <div className="mt-2 p-2 bg-yellow-900/30 border border-yellow-700 rounded">
-                          <p className="text-yellow-300 font-semibold mb-1">
-                            💰 Payment Required
-                          </p>
-                          <div className="text-yellow-200 space-y-1 text-xs">
-                            <p>
-                              <span className="text-yellow-400">Network:</span>{" "}
-                              {toolCall.paymentRequired.network}
+                        <div className="mt-2 p-3 bg-yellow-900/20 border border-yellow-600/50 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm">💰</span>
+                            <p className="text-yellow-200 font-semibold text-xs">
+                              Payment Required
                             </p>
-                            <p>
-                              <span className="text-yellow-400">Amount:</span>{" "}
-                              {toolCall.paymentRequired.maxAmountRequired}{" "}
-                              {String(
-                                toolCall.paymentRequired.extra?.name || "tokens"
-                              )}
-                            </p>
-                            <p>
-                              <span className="text-yellow-400">Pay To:</span>{" "}
-                              {toolCall.paymentRequired.payTo}
-                            </p>
-                            <p>
-                              <span className="text-yellow-400">
-                                Description:
-                              </span>{" "}
-                              {toolCall.paymentRequired.description}
-                            </p>
+                          </div>
+                          <div className="space-y-1.5 text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-yellow-300/70">Amount</span>
+                              <span className="text-yellow-200 font-medium">
+                                {formatUnits(BigInt(toolCall.paymentRequired.maxAmountRequired), 6)}{" "}
+                                {String(toolCall.paymentRequired.extra?.name || "USDC")}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-yellow-300/70">Network</span>
+                              <span className="text-yellow-200 font-medium">
+                                {toolCall.paymentRequired.network}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-yellow-300/70">Recipient</span>
+                              <span className="text-yellow-200 font-mono text-[10px]">
+                                {formatAddress(toolCall.paymentRequired.payTo)}
+                              </span>
+                            </div>
+                            {toolCall.paymentRequired.description && (
+                              <div className="pt-1.5 border-t border-yellow-700/30">
+                                <span className="text-yellow-300/70 block mb-0.5">Description</span>
+                                <p className="text-yellow-200 text-[11px]">
+                                  {toolCall.paymentRequired.description}
+                                </p>
+                              </div>
+                            )}
                           </div>
                         </div>
                       )}
@@ -344,86 +441,120 @@ export default function TryWithAgentPage() {
 
       {/* Payment Confirmation Modal */}
       {pendingPayment && pendingPayment.length > 0 && (
-        <div className="p-4 border border-yellow-700 bg-yellow-900/20 rounded-lg">
-          <div className="mb-3">
-            <p className="text-yellow-300 font-semibold mb-2">
-              💰 Payment Required
-            </p>
+        <div className="p-5 border border-yellow-600/50 bg-gradient-to-br from-yellow-900/30 to-yellow-800/20 rounded-xl backdrop-blur-sm shadow-lg">
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center">
+                <span className="text-xl">💰</span>
+              </div>
+              <div>
+                <h3 className="text-yellow-200 font-semibold text-base">
+                  Payment Required
+                </h3>
+                <p className="text-yellow-300/70 text-xs">
+                  Confirm payment to proceed with the request
+                </p>
+              </div>
+            </div>
             {pendingPayment[0] &&
               (() => {
                 const req = pendingPayment[0];
-                const amountUSD = Number(req.maxAmountRequired) / 1e6;
                 return (
-                  <div className="text-yellow-200 space-y-1 text-sm mb-4">
-                    <p>
-                      <span className="text-yellow-400">Amount:</span> $
-                      {amountUSD.toFixed(6)} USD ({req.maxAmountRequired}{" "}
-                      {String(req.extra?.name || "tokens")})
-                    </p>
-                    <p>
-                      <span className="text-yellow-400">Network:</span>{" "}
-                      {req.network}
-                    </p>
-                    <p>
-                      <span className="text-yellow-400">Pay To:</span>{" "}
-                      {req.payTo}
-                    </p>
-                    <p>
-                      <span className="text-yellow-400">Description:</span>{" "}
-                      {req.description}
-                    </p>
+                  <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-lg p-4 space-y-3 mb-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-400 text-sm font-medium">Amount</span>
+                      <span className="text-yellow-200 font-semibold">
+                        {formatUnits(BigInt(req.maxAmountRequired), 6)} {String(req.extra?.name || "USDC")}
+                      </span>
+                    </div>
+                    <div className="h-px bg-zinc-700/50" />
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-400 text-sm font-medium">Network</span>
+                      <span className="text-foreground text-sm font-medium">
+                        {req.network}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-400 text-sm font-medium">Recipient</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-foreground text-sm font-mono">
+                          {formatAddress(req.payTo)}
+                        </span>
+                        <CopyButton
+                          textToCopy={req.payTo}
+                          iconSize="w-3.5 h-3.5"
+                        />
+                      </div>
+                    </div>
+                    {req.description && (
+                      <>
+                        <div className="h-px bg-zinc-700/50" />
+                        <div>
+                          <span className="text-zinc-400 text-sm font-medium block mb-1">Description</span>
+                          <p className="text-foreground text-sm">
+                            {req.description}
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 );
               })()}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               onClick={() => {
                 setPendingPayment(null);
                 setPendingMessages([]);
               }}
-              className="flex-1 px-4 py-2 bg-background text-foreground rounded-lg font-medium hover:bg-gray-600 transition-colors"
+              className="flex-1 px-4 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 text-foreground rounded-lg font-medium transition-colors border border-zinc-700/50"
             >
               Cancel
             </button>
             <button
               onClick={() => handleSend(true)}
               disabled={isLoading}
-              className="flex-1 px-4 py-2 bg-foreground text-background rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-background rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-yellow-500/20"
             >
-              {isLoading ? "Processing..." : "Confirm & Pay"}
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
+                  Processing...
+                </span>
+              ) : (
+                "Confirm & Pay"
+              )}
             </button>
           </div>
         </div>
       )}
       {/* Prompt Suggestions */}
-      {messages.length === 1 && !isLoading && (
-        <div className="flex flex-row gap-2 items-center justify-start">
-          <p className="text-xs text-zinc-400 whitespace-nowrap">Try these prompts:</p>
-          <div className="flex flex-row max-w-80 md:max-w-full overflow-x-auto scrollbar-hide gap-2">
+      {!isLoading && !pendingPayment && (
+        <div className="flex flex-col gap-2">
+          <p className="text-xs text-zinc-500 font-medium">Sample prompts</p>
+          <div className="flex flex-row max-w-full overflow-x-auto scrollbar-hide gap-2 pb-1">
             {[
+              { text: "Shorten a URL", paid: true, price: "$0.01" },
+              { text: "Generate a password", paid: true, price: "$0.01" },
               { text: "What tools are available?", paid: false },
-              { text: "Help me understand x402", paid: false },
-              { text: "Square of 3", paid: true, price: "$0.01" },
+              { text: "Motivate me", paid: false },
             ].map((prompt) => (
               <button
                 key={prompt.text}
                 onClick={() => handleSend(false, prompt.text)}
-                className={`px-4 py-2 text-sm rounded-lg transition-colors flex items-center gap-2 whitespace-nowrap ${
+                className={`px-3 py-1.5 text-xs rounded-lg transition-all flex items-center gap-1.5 whitespace-nowrap ${
                   prompt.paid
-                    ? "bg-yellow-900/20 hover:bg-yellow-900/30 text-foreground border border-yellow-600/50"
-                    : "bg-zinc-900 hover:bg-zinc-800 text-foreground border border-zinc-700"
+                    ? "bg-yellow-900/20 hover:bg-yellow-900/30 text-foreground border border-yellow-600/50 hover:border-yellow-600/70"
+                    : "bg-zinc-900/50 hover:bg-zinc-800/50 text-foreground border border-zinc-700/50 hover:border-zinc-600"
                 }`}
               >
                 {prompt.paid && (
-                  <span className="text-yellow-400 text-xs font-semibold">
-                    💰
-                  </span>
+                  <span className="text-yellow-400 text-[10px]">💰</span>
                 )}
-                <span>{prompt.text}</span>
+                <span className="font-medium">{prompt.text}</span>
                 {prompt.paid && prompt.price && (
-                  <span className="text-xs text-yellow-300 font-medium ml-1">
-                    ({prompt.price})
+                  <span className="text-[10px] text-yellow-300/80 font-medium">
+                    {prompt.price}
                   </span>
                 )}
               </button>

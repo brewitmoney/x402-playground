@@ -17,9 +17,6 @@ const client = createThirdwebClient({
 });
 
 // Define allowed chains - only Base Sepolia for this app
-const allowedChains = [
-  defineChain(84532), // Base Sepolia
-];
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 

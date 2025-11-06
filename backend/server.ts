@@ -1,3 +1,5 @@
+// CRITICAL: Import fetch patch FIRST before any x402-related imports
+// This ensures the patch is applied before agents/x402 or x402-express initialize
 import express, { type Request, type Response } from "express";
 import cors from "cors";
 import agentRoutes from "./routes/agent.js";
@@ -14,6 +16,13 @@ const PORT = process.env.BACKEND_PORT ? parseInt(process.env.BACKEND_PORT) : 300
 app.use(cors());
 app.use(express.json());
 
+
+
+const FACILITATOR_URL = process.env.FACILITATOR_URL || "https://facilitator.x402.rs";
+
+console.log('[Config] Facilitator URL:', FACILITATOR_URL);
+console.log('[Config] Payee Address:', process.env.PAYEE_ADDRESS || "0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db");
+
 app.use(paymentMiddleware(
     process.env.PAYEE_ADDRESS as `0x${string}` || "0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db" as `0x${string}`, // your receiving wallet address
     {  // Route configurations for protected endpoints
@@ -24,7 +33,7 @@ app.use(paymentMiddleware(
         },
       },
     {
-      url: "https://x402.org/facilitator", // Facilitator URL for Base Sepolia testnet.
+      url: FACILITATOR_URL as `${string}://${string}`, // Facilitator URL - can be overridden via FACILITATOR_URL env var
     }
   ));
 

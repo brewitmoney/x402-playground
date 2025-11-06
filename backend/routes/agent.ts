@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { generateText, CoreMessage, dynamicTool, jsonSchema } from "ai";
+import { generateText, CoreMessage, dynamicTool, jsonSchema, stepCountIs } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { privateKeyToAccount } from "viem/accounts";
@@ -143,10 +143,15 @@ router.post("/", async (req: Request, res: Response) => {
     }));
 
     // Use the tools with your AI model
+    // Enable multi-step calls with stopWhen: the AI SDK will automatically
+    // feed tool results back to the LLM until there are no more tool calls
+    // or the maximum step count is reached. This ensures we get a final
+    // human-readable response after tool execution.
     const result = await generateText({
       model: openai("gpt-4o-mini"),
       tools,
       messages: coreMessages,
+      stopWhen: stepCountIs(10), // Stop after a maximum of 10 steps if tools were called
     });
 
     const toolCalls: Array<{
@@ -282,11 +287,16 @@ router.post("/", async (req: Request, res: Response) => {
 
     console.log("=== EXTRACTED TOOL CALLS ===");
     console.log(JSON.stringify(toolCalls, null, 2));
+    console.log(`=== TOTAL STEPS: ${result.steps?.length || 0} ===`);
+    console.log("=== FINAL HUMAN MESSAGE ===");
+    console.log(result.text || "No response generated");
 
     // Clean up MCP client
     await client.close();
 
     // Return JSON response
+    // With multi-step calls enabled, result.text contains the final human-readable
+    // response after all tool calls have been executed and fed back to the LLM
     res.json({
       text: result.text || "No response generated",
       toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
