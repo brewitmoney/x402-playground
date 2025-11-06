@@ -36,10 +36,8 @@ interface Message {
 }
 
 // Agent's wallet address (placeholder - agent has its own wallet)
-const AGENT_WALLET_ADDRESS =
-  process.env.NEXT_PUBLIC_AGENT_WALLET_ADDRESS ||
-  "0x0000000000000000000000000000000000000000";
-const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+const AGENT_WALLET_ADDRESS = process.env.NEXT_PUBLIC_AGENT_WALLET_ADDRESS || "0x0000000000000000000000000000000000000000";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
 
 export default function TryWithAgentPage() {
   const [messages, setMessages] = useState<Message[]>([
