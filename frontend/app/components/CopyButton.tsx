@@ -28,7 +28,7 @@ export default function CopyButton({
   return (
     <button
       onClick={handleCopy}
-      className={`transition-all ${className}`}
+      className={`transition-all cursor-pointer ${className}`}
       title={copied ? "Copied!" : "Click to copy"}
     >
       <svg

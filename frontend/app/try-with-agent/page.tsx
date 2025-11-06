@@ -215,7 +215,7 @@ export default function TryWithAgentPage() {
                 <span>{formatAddress(AGENT_WALLET_ADDRESS)}</span>
                 <CopyButton
                   textToCopy={AGENT_WALLET_ADDRESS}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                  
                   iconSize="w-4 h-4"
                 />
               </div>

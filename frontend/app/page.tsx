@@ -7,7 +7,7 @@ export default function Home() {
       <Image
         src="/assets/x402-Playground-White.svg"
         alt="x402 Playground Logo"
-        width={180}
+        width={220}
         height={20}
         priority
       />
