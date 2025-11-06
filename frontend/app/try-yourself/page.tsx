@@ -9,7 +9,7 @@ import { createThirdwebClient } from "thirdweb";
 import { useActiveWalletChain } from "thirdweb/react";
 import { viemAdapter } from "thirdweb/adapters/viem";
 import { defineChain } from "thirdweb/chains";
-import { wrapFetchWithPayment, decodeXPaymentResponse } from "x402-fetch";
+import { wrapFetchWithPayment } from "x402-fetch";
 import { useUSDCBalance } from "../hooks/useUSDCBalance";
 
 const client = createThirdwebClient({
@@ -137,12 +137,7 @@ export default function TryYourselfPage() {
   return (
     <main className="flex w-full flex-col items-center justify-between sm:items-start h-full">
       <div className="flex items-center gap-4 w-full mb-4">
-        <Link
-          href="/"
-          className="text-zinc-400 hover:text-foreground transition-colors"
-        >
-          ← Back
-        </Link>
+       
         <Image
           src="/assets/x402-Playground-White.svg"
           alt="x402 Playground Logo"
@@ -150,8 +145,8 @@ export default function TryYourselfPage() {
           height={20}
           priority
         />
-        <div className="ml-auto flex items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-600 bg-gray-900/50">
+        <div className="ml-auto flex md:flex-row flex-col items-center gap-4">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-900/50">
             <span className="text-sm text-zinc-400">USDC:</span>
             <span className="text-sm font-semibold text-foreground">
               {isLoadingBalance ? "..." : `$${usdcBalance}`}
@@ -168,6 +163,12 @@ export default function TryYourselfPage() {
           />
         </div>
       </div>
+      <Link
+          href="/"
+          className="text-zinc-400 hover:text-foreground transition-colors"
+        >
+          ← Back
+        </Link>
       <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left max-w-md">
         <h1 className="text-5xl font-semibold tracking-tight text-foreground">
           Try Yourself
@@ -198,7 +199,7 @@ export default function TryYourselfPage() {
       {/* Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg border border-gray-600 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-zinc-900 rounded-lg border border-zinc-700 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
@@ -238,7 +239,7 @@ export default function TryYourselfPage() {
                       setEndpointResult(null);
                     }
                   }}
-                  className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-foreground"
+                  className="w-full px-4 py-2 bg-gray-800 border border-zinc-700 rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-foreground"
                 >
                   {ENDPOINTS.map((endpoint) => (
                     <option key={endpoint.id} value={endpoint.id}>
@@ -265,7 +266,7 @@ export default function TryYourselfPage() {
                           value={endpointArgs[arg.name] || ""}
                           onChange={(e) => handleArgChange(arg.name, e.target.value)}
                           placeholder={arg.placeholder}
-                          className="w-full px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-foreground placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-foreground"
+                          className="w-full px-4 py-2 bg-gray-800 border border-zinc-700 rounded-lg text-foreground placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-foreground"
                         />
                       </div>
                     ))}
@@ -275,7 +276,7 @@ export default function TryYourselfPage() {
 
               {/* Response */}
               {endpointResult && (
-                <div className="mb-6 p-4 rounded-lg border border-gray-600 bg-gray-800/50">
+                <div className="mb-6 p-4 rounded-lg border border-zinc-700 bg-gray-800/50">
                   <h3 className="text-sm font-semibold text-foreground mb-2">
                     Response:
                   </h3>

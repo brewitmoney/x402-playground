@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="flex w-full flex-col items-center justify-between sm:items-start h-full">
+    <main className="flex w-full flex-col items-start justify-between sm:items-center h-full">
       <Image
         src="/assets/x402-Playground-White.svg"
         alt="x402 Playground Logo"
@@ -11,7 +11,7 @@ export default function Home() {
         height={20}
         priority
       />
-      <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left max-w-md">
+      <div className="flex flex-col items-start gap-6 sm:items-center text-left sm:text-center max-w-lg">
         <h1 className="text-5xl font-semibold tracking-tight text-foreground">
           Welcome to the x402 Playground
         </h1>
@@ -19,7 +19,7 @@ export default function Home() {
           A playground to try out x402 features and explore the x402 ecosystem.
         </p>
       </div>
-      <div className="flex flex-col gap-4 w-full max-w-md">
+      <div className="flex md:flex-row flex-col gap-4 w-full max-w-lg">
         <Link
           href="/try-with-agent"
           className="flex items-center justify-center gap-2 rounded-full bg-foreground px-8 py-4 text-background transition-colors w-full text-lg font-medium hover:opacity-90"
@@ -28,7 +28,7 @@ export default function Home() {
         </Link>
         <Link
           href="/try-yourself"
-          className="flex items-center justify-center gap-2 rounded-full border border-gray-600 px-8 py-4 text-foreground transition-colors w-full text-lg font-medium hover:bg-gray-900/50"
+          className="flex items-center justify-center gap-2 rounded-full border border-zinc-700 px-8 py-4 text-foreground transition-colors w-full text-lg font-medium hover:bg-zinc-900/50"
         >
           Try Yourself
         </Link>
