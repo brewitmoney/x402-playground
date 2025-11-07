@@ -229,7 +229,7 @@ export default function TryYourselfPage() {
         />
         <div className="ml-auto flex md:flex-row flex-col items-end md:items-center gap-2 md:gap-4">
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-900/50">
-            <span className="text-sm text-zinc-400">USDC:</span>
+            <span className="text-sm text-zinc-400">USDC</span>
             <span className="text-sm font-semibold text-foreground">
               {isLoadingBalance ? "..." : `$${usdcBalance}`}
             </span>

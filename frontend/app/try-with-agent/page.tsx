@@ -273,7 +273,7 @@ export default function TryWithAgentPage() {
   };
 
   return (
-    <main className="flex w-full flex-col h-full gap-6">
+    <main className="flex w-full flex-col h-full md:gap-6 gap-4">
       <div className="flex items-center gap-4 w-full">
         <Image
           src="/assets/x402-Playground-White.svg"
@@ -285,7 +285,7 @@ export default function TryWithAgentPage() {
         <div className="ml-auto flex md:flex-row flex-col items-end md:items-center md:gap-4 gap-2">
           {/* USDC Balance */}
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-900/50">
-            <span className="text-sm text-zinc-400">USDC:</span>
+            <span className="text-sm text-zinc-400">USDC</span>
             <span className="text-sm font-semibold text-foreground">
               {isLoadingBalance ? "..." : `$${usdcBalance}`}
             </span>
@@ -294,7 +294,7 @@ export default function TryWithAgentPage() {
           <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-900/50">
             
             <div className="flex flex-row items-center gap-2">
-              <span className="text-sm text-zinc-400 font-medium">Agent:</span>
+              <span className="text-sm text-zinc-400 font-medium">Agent</span>
               <div className="flex items-center gap-1.5 text-sm text-foreground group">
                 <span>{formatAddress(AGENT_WALLET_ADDRESS)}</span>
                 <CopyButton
@@ -530,8 +530,8 @@ export default function TryWithAgentPage() {
       )}
       {/* Prompt Suggestions */}
       {!isLoading && !pendingPayment && (
-        <div className="flex flex-col gap-2">
-          <p className="text-xs text-zinc-500 font-medium">Sample prompts</p>
+        <div className="flex flex-row items-center gap-3">
+          <p className="text-xs text-zinc-500 font-medium whitespace-nowrap">Sample prompts</p>
           <div className="flex flex-row max-w-full overflow-x-auto scrollbar-hide gap-2 pb-1">
             {[
               { text: "Shorten a URL", paid: true, price: "$0.02" },

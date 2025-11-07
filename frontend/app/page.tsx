@@ -12,7 +12,7 @@ export default function Home() {
         priority
       />
       <div className="flex flex-col items-start gap-6 sm:items-center text-left sm:text-center max-w-lg">
-        <h1 className="text-5xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-5xl font-bold text-foreground">
           Welcome to the x402 Playground
         </h1>
         <p className="text-lg text-zinc-400">
