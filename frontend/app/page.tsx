@@ -16,7 +16,7 @@ export default function Home() {
           Welcome to the x402 Playground
         </h1>
         <p className="text-lg text-zinc-400">
-          A playground to try out x402 features and explore the x402 ecosystem.
+          A playground to try out x402 features with MCP and Web Servers.
         </p>
       </div>
       <div className="flex md:flex-row flex-col gap-4 w-full max-w-lg">
