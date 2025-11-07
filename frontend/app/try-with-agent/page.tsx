@@ -188,18 +188,25 @@ export default function TryWithAgentPage() {
   };
 
   // Function to render text with clickable URLs
-  const renderTextWithLinks = (text: string): React.ReactNode[] => {
+  const renderTextWithLinks = (
+    text: string,
+    isResponse: boolean
+  ): React.ReactNode[] => {
     // First, handle markdown-style links [text](url)
     const markdownLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
     let match;
 
+    const linkClass = isResponse
+      ? "text-foreground font-semibold underline break-all"
+      : "text-background font-semibold underline break-all";
+
     while ((match = markdownLinkRegex.exec(text)) !== null) {
       // Add text before the link
       if (match.index > lastIndex) {
         const beforeText = text.slice(lastIndex, match.index);
-        parts.push(...renderPlainUrls(beforeText));
+        parts.push(...renderPlainUrls(beforeText, isResponse));
       }
       // Add the link
       parts.push(
@@ -208,7 +215,7 @@ export default function TryWithAgentPage() {
           href={match[2]}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-background font-medium underline break-all"
+          className={linkClass}
         >
           {match[1]}
         </a>
@@ -219,25 +226,32 @@ export default function TryWithAgentPage() {
     // Add remaining text
     if (lastIndex < text.length) {
       const remainingText = text.slice(lastIndex);
-      parts.push(...renderPlainUrls(remainingText));
+      parts.push(...renderPlainUrls(remainingText, isResponse));
     }
 
     // If no markdown links were found, just render plain URLs
     if (parts.length === 0) {
-      return renderPlainUrls(text);
+      return renderPlainUrls(text, isResponse);
     }
 
     return parts;
   };
 
   // Function to render plain URLs in text
-  const renderPlainUrls = (text: string): React.ReactNode[] => {
+  const renderPlainUrls = (
+    text: string,
+    isResponse: boolean
+  ): React.ReactNode[] => {
     // URL regex pattern
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
     let match;
     let key = 0;
+
+    const linkClass = isResponse
+      ? "text-foreground font-semibold underline break-all"
+      : "text-background font-semibold underline break-all";
 
     while ((match = urlRegex.exec(text)) !== null) {
       // Add text before the URL
@@ -251,7 +265,7 @@ export default function TryWithAgentPage() {
           href={match[1]}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-background font-medium underline break-all"
+          className={linkClass}
         >
           {match[1]}
         </a>
@@ -332,7 +346,7 @@ export default function TryWithAgentPage() {
               }`}
             >
               <div className="text-sm whitespace-pre-wrap">
-                {renderTextWithLinks(message.content)}
+                {renderTextWithLinks(message.content, message.role === "assistant")}
               </div>
               {message.toolCalls && message.toolCalls.length > 0 && (
                 <div className="mt-3 pt-3 border-t border-gray-700 space-y-2">
@@ -514,7 +528,7 @@ export default function TryWithAgentPage() {
             <button
               onClick={() => handleSend(true)}
               disabled={isLoading}
-              className="flex-1 px-4 py-2.5 bg-yellow-500 hover:bg-yellow-600 text-background rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-yellow-500/20"
+              className="flex-1 px-4 py-2.5 bg-foreground hover:opacity-90 text-background rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-yellow-500/20"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
