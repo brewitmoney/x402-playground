@@ -208,7 +208,7 @@ export default function TryWithAgentPage() {
           href={match[2]}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-400 hover:text-blue-300 underline break-all"
+          className="text-background font-medium underline break-all"
         >
           {match[1]}
         </a>
@@ -251,7 +251,7 @@ export default function TryWithAgentPage() {
           href={match[1]}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-400 hover:text-blue-300 underline break-all"
+          className="text-background font-medium underline break-all"
         >
           {match[1]}
         </a>
