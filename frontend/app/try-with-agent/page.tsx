@@ -308,12 +308,12 @@ export default function TryWithAgentPage() {
         </div>
       </div>
 
-      {/* <Link
+      <Link
         href="/"
         className="text-zinc-400 hover:text-foreground transition-colors"
       >
         ← Back
-      </Link> */}
+      </Link>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-zinc-900 rounded-lg border border-zinc-700">
@@ -534,7 +534,7 @@ export default function TryWithAgentPage() {
           <p className="text-xs text-zinc-500 font-medium">Sample prompts</p>
           <div className="flex flex-row max-w-full overflow-x-auto scrollbar-hide gap-2 pb-1">
             {[
-              { text: "Shorten a URL", paid: true, price: "$0.01" },
+              { text: "Shorten a URL", paid: true, price: "$0.02" },
               { text: "Generate a password", paid: true, price: "$0.01" },
               { text: "What tools are available?", paid: false },
               { text: "Motivate me", paid: false },

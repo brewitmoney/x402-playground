@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { withX402, type X402Config } from "agents/x402";
 import { z } from "zod";
+import { generatePassword, shortenUrl, getInspirationalQuote, type QuoteCategory } from "../lib/services.js";
 
 // X402 configuration for payment-enabled tools
 const FACILITATOR_URL = process.env.FACILITATOR_URL || "https://x402.org/facilitator";
@@ -35,48 +36,31 @@ server.paidTool(
   },
   {},
   async ({ length, includeNumbers, includeSymbols, includeUppercase, includeLowercase }) => {
-    const lowercase = "abcdefghijklmnopqrstuvwxyz";
-    const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const numbers = "0123456789";
-    const symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?";
-    
-    let charset = "";
-    if (includeLowercase) charset += lowercase;
-    if (includeUppercase) charset += uppercase;
-    if (includeNumbers) charset += numbers;
-    if (includeSymbols) charset += symbols;
-    
-    if (charset.length === 0) {
-      return { content: [{ type: "text", text: JSON.stringify({ error: "At least one character type must be enabled" }) }] };
+    try {
+      const result = generatePassword({
+        length,
+        includeNumbers,
+        includeSymbols,
+        includeUppercase,
+        includeLowercase,
+      });
+      
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify(result, null, 2)
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            error: error instanceof Error ? error.message : "Failed to generate password"
+          })
+        }]
+      };
     }
-    
-    let password = "";
-    for (let i = 0; i < length; i++) {
-      password += charset.charAt(Math.floor(Math.random() * charset.length));
-    }
-    
-    // Calculate strength
-    let strength = "weak";
-    if (length >= 12 && charset.length >= 60) strength = "strong";
-    else if (length >= 8 && charset.length >= 40) strength = "medium";
-    
-    return {
-      content: [{
-        type: "text",
-        text: JSON.stringify({
-          password,
-          length,
-          strength,
-          characterSetSize: charset.length,
-          options: {
-            includeNumbers,
-            includeSymbols,
-            includeUppercase,
-            includeLowercase
-          }
-        }, null, 2)
-      }]
-    };
   }
 );
 
@@ -93,41 +77,11 @@ server.paidTool(
   {},
   async ({ url }) => {
     try {
-      // Use is.gd API to shorten the URL (free, active API)
-      const isGdApi = `https://is.gd/create.php?format=json&url=${encodeURIComponent(url)}`;
-      const response = await fetch(isGdApi);
-      
-      if (!response.ok) {
-        throw new Error(`is.gd API error: ${response.statusText}`);
-      }
-      
-      const data = await response.json() as { 
-        shorturl?: string; 
-        errorcode?: number; 
-        errormessage?: string;
-      };
-      
-      // Check if there's an error in the response
-      if (data.errorcode) {
-        throw new Error(data.errormessage || "Failed to shorten URL");
-      }
-      
-      const shortUrl = data.shorturl;
-      
-      // Validate that we got a valid short URL
-      if (!shortUrl || !shortUrl.startsWith("https://is.gd/")) {
-        throw new Error("Invalid response from is.gd API");
-      }
-      
+      const result = await shortenUrl(url);
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({
-            originalUrl: url,
-            shortUrl: shortUrl,
-            service: "is.gd",
-            message: "URL shortened successfully using is.gd"
-          }, null, 2)
+          text: JSON.stringify(result, null, 2)
         }]
       };
     } catch (error) {
@@ -145,55 +99,19 @@ server.paidTool(
   }
 );
 
-// 7. Random Quote Generator (Free)
+// 3. Random Quote Generator (Free)
 server.tool(
   "get_inspirational_quote",
   "Get a random inspirational quote",
   {
     category: z.enum(["motivation", "success", "wisdom", "creativity", "random"]).optional().default("random").describe("Quote category")
   },
-  async ({ category }) => {
-    const quotes: Record<string, string[]> = {
-      motivation: [
-        "The only way to do great work is to love what you do. - Steve Jobs",
-        "Don't watch the clock; do what it does. Keep going. - Sam Levenson",
-        "Believe you can and you're halfway there. - Theodore Roosevelt"
-      ],
-      success: [
-        "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill",
-        "The way to get started is to quit talking and begin doing. - Walt Disney",
-        "Innovation distinguishes between a leader and a follower. - Steve Jobs"
-      ],
-      wisdom: [
-        "The only true wisdom is in knowing you know nothing. - Socrates",
-        "Life is what happens to you while you're busy making other plans. - John Lennon",
-        "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt"
-      ],
-      creativity: [
-        "Creativity is intelligence having fun. - Albert Einstein",
-        "The creative adult is the child who survived. - Ursula K. Le Guin",
-        "Imagination is more important than knowledge. - Albert Einstein"
-      ],
-      random: [
-        "The only way to do great work is to love what you do. - Steve Jobs",
-        "Success is not final, failure is not fatal: it is the courage to continue that counts. - Winston Churchill",
-        "The only true wisdom is in knowing you know nothing. - Socrates",
-        "Creativity is intelligence having fun. - Albert Einstein",
-        "The future belongs to those who believe in the beauty of their dreams. - Eleanor Roosevelt"
-      ]
-    };
-    
-    const categoryQuotes = quotes[category] || quotes.random;
-    const randomQuote = categoryQuotes[Math.floor(Math.random() * categoryQuotes.length)];
-    
+  async ({ category = "random" }) => {
+    const result = getInspirationalQuote(category as QuoteCategory);
     return {
       content: [{
         type: "text",
-        text: JSON.stringify({
-          quote: randomQuote,
-          category: category,
-          message: `Here's a ${category} quote for you!`
-        }, null, 2)
+        text: JSON.stringify(result, null, 2)
       }]
     };
   }

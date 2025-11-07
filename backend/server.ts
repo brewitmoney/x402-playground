@@ -26,11 +26,17 @@ console.log('[Config] Payee Address:', process.env.PAYEE_ADDRESS || "0x958543756
 app.use(paymentMiddleware(
     process.env.PAYEE_ADDRESS as `0x${string}` || "0x958543756A4c7AC6fB361f0efBfeCD98E4D297Db" as `0x${string}`, // your receiving wallet address
     {  // Route configurations for protected endpoints
-        "GET /api/x402-endpoint/*": {
-          // USDC amount in dollars
-          price: "$0.001",
+        // Password Generator - $0.01 (same as MCP server)
+        "POST /api/x402-endpoint/generate-password": {
+          price: "$0.01",
           network: "base-sepolia",
         },
+        // URL Shortener - $0.01 (same as MCP server)
+        "POST /api/x402-endpoint/shorten-url": {
+          price: "$0.02",
+          network: "base-sepolia",
+        },
+        // Quote endpoint is free - no payment required
       },
     {
       url: FACILITATOR_URL as `${string}://${string}`, // Facilitator URL - can be overridden via FACILITATOR_URL env var

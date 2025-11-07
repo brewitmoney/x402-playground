@@ -33,15 +33,61 @@ interface EndpointOption {
 
 const ENDPOINTS: EndpointOption[] = [
   {
-    id: "square",
-    name: "Square of a Number",
-    path: "/api/x402-endpoint/square",
+    id: "generate-password",
+    name: "Generate Password",
+    path: "/api/x402-endpoint/generate-password",
+    method: "POST",
+    arguments: [
+      {
+        name: "length",
+        type: "number",
+        placeholder: "Password length (default: 16)",
+      },
+      {
+        name: "includeNumbers",
+        type: "string",
+        placeholder: "Include numbers? (true/false, default: true)",
+      },
+      {
+        name: "includeSymbols",
+        type: "string",
+        placeholder: "Include symbols? (true/false, default: true)",
+      },
+      {
+        name: "includeUppercase",
+        type: "string",
+        placeholder: "Include uppercase? (true/false, default: true)",
+      },
+      {
+        name: "includeLowercase",
+        type: "string",
+        placeholder: "Include lowercase? (true/false, default: true)",
+      },
+    ],
+  },
+  {
+    id: "shorten-url",
+    name: "Shorten URL",
+    path: "/api/x402-endpoint/shorten-url",
+    method: "POST",
+    arguments: [
+      {
+        name: "url",
+        type: "string",
+        placeholder: "Enter URL to shorten",
+      },
+    ],
+  },
+  {
+    id: "quote",
+    name: "Get Inspirational Quote",
+    path: "/api/x402-endpoint/quote",
     method: "GET",
     arguments: [
       {
-        name: "number",
-        type: "number",
-        placeholder: "Enter a number",
+        name: "category",
+        type: "string",
+        placeholder: "Category (motivation/success/wisdom/creativity/random)",
       },
     ],
   },
@@ -87,26 +133,53 @@ export default function TryYourselfPage() {
         wallet,
       });
 
-      // Build query string for GET requests
-      const queryParams = new URLSearchParams();
-      selectedEndpoint.arguments.forEach((arg) => {
-        const value = endpointArgs[arg.name];
-        if (value) {
-          queryParams.append(arg.name, value);
-        }
-      });
+      let url = `${BACKEND_URL}${selectedEndpoint.path}`;
+      const fetchOptions: RequestInit = {
+        method: selectedEndpoint.method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      };
 
-      const url = `${BACKEND_URL}${selectedEndpoint.path}${
-        queryParams.toString() ? `?${queryParams.toString()}` : ""
-      }`;
+      // Handle GET vs POST requests
+      if (selectedEndpoint.method === "GET") {
+        // Build query string for GET requests
+        const queryParams = new URLSearchParams();
+        selectedEndpoint.arguments.forEach((arg) => {
+          const value = endpointArgs[arg.name];
+          if (value) {
+            queryParams.append(arg.name, value);
+          }
+        });
+        if (queryParams.toString()) {
+          url += `?${queryParams.toString()}`;
+        }
+      } else {
+        // Build body for POST requests
+        const body: Record<string, unknown> = {};
+        selectedEndpoint.arguments.forEach((arg) => {
+          const value = endpointArgs[arg.name];
+          if (value !== undefined && value !== "") {
+            // Convert string booleans to actual booleans
+            if (value === "true") {
+              body[arg.name] = true;
+            } else if (value === "false") {
+              body[arg.name] = false;
+            } else if (arg.type === "number") {
+              body[arg.name] = Number(value);
+            } else {
+              body[arg.name] = value;
+            }
+          }
+        });
+        fetchOptions.body = JSON.stringify(body);
+      }
 
       const fetchWithPayment = wrapFetchWithPayment(
         fetch,
         viemWalletClient as Signer | MultiNetworkSigner
       );
-      const response = await fetchWithPayment(url, {
-        method: selectedEndpoint.method,
-      });
+      const response = await fetchWithPayment(url, fetchOptions);
 
       const data = await response.json();
       // const paymentResponse = decodeXPaymentResponse(response.headers.get("x-payment-response")!);
@@ -164,12 +237,12 @@ export default function TryYourselfPage() {
           <ConnectButton />
         </div>
       </div>
-      {/* <Link
+      <Link
         href="/"
         className="text-zinc-400 hover:text-foreground transition-colors"
       >
         ← Back
-      </Link> */}
+      </Link>
       <div className="flex flex-col items-center justify-center gap-6 text-center max-w-lg w-full mx-auto h-full">
         <h1 className="text-5xl font-semibold tracking-tight text-foreground">
           Try Yourself
@@ -314,10 +387,7 @@ function EndpointForm({
         </button>
         <button
           onClick={onCallEndpoint}
-          disabled={
-            isLoadingEndpoint ||
-            selectedEndpoint.arguments.some((arg) => !endpointArgs[arg.name])
-          }
+          disabled={isLoadingEndpoint}
           className="flex-1 px-4 py-2 bg-foreground text-background rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isLoadingEndpoint ? (
